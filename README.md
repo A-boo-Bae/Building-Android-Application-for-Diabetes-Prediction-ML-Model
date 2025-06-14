@@ -1,37 +1,35 @@
-# Building-Android-Application-for-Diabetes-Prediction-ML-Model
+# Android Application for Diabetes Prediction Using Machine Learning
+This project demonstrates how to deploy a machine learning model for diabetes prediction through a mobile application. It consists of:
 
-I've been working on an exciting project: deploying a machine learning model for diabetes prediction as an Android application. This involves a FastAPI backend and an MIT App Inventor frontend.
+⚙️ A FastAPI backend serving a trained ML model.
 
-Backend: FastAPI for Diabetes Prediction
-The core of the prediction service is built using FastAPI, a modern, fast (high-performance) web framework for building APIs with Python 3.7+.
+📱 An MIT App Inventor Android application as the frontend interface.
 
-1. Setting up the Environment:
+🧠 Backend: FastAPI for Diabetes Prediction
+The backend is built using FastAPI, a modern and fast (high-performance) web framework for Python 3.7+.
 
-First, I installed the necessary libraries:
+1. ✅ Setting Up the Environment
+Install the required dependencies:
 
-Bash
-
-!pip install fastapi
-!pip install uvicorn
-!pip install pickle5
-!pip install pydantic
-!pip install scikit-learn
-!pip install requests
-!pip install pypi-json
-!pip install pyngrok
-!pip install nest-asyncio
-
-
-2. API Initialization and Middleware:
-
-The FastAPI application is initialized, and CORS middleware is added to handle cross-origin requests, allowing the frontend to communicate with the backend.
-
-Python
-
+bash
+Copy
+Edit
+pip install fastapi
+pip install uvicorn
+pip install pickle5
+pip install pydantic
+pip install scikit-learn
+pip install requests
+pip install pypi-json
+pip install pyngrok
+pip install nest-asyncio
+2. 🚀 API Initialization and Middleware
+python
+Copy
+Edit
 from fastapi import FastAPI
 from pydantic import BaseModel
 import pickle
-import json
 import uvicorn
 from pyngrok import ngrok
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,6 +38,7 @@ from fastapi.responses import FileResponse
 
 app = FastAPI()
 
+# Enable CORS
 origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
@@ -49,23 +48,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
-A root endpoint was also created for a welcome message:
-
-Python
-
+# Root endpoint
 @app.get("/")
 def read_root():
     return {"message": "Welcome to my FastAPI app!"}
-
-
-3. Defining the Input Model:
-
-To ensure proper data validation for the prediction, a Pydantic BaseModel called model_input was defined. This specifies the expected data types for the input features of the diabetes prediction model:
-
-Python
-
+3. 📥 Defining the Input Model
+python
+Copy
+Edit
 class model_input(BaseModel):
     Pregnancies: int
     Glucose: int
@@ -75,23 +65,15 @@ class model_input(BaseModel):
     BMI: float
     DiabetesPedigreeFunction: float
     Age: int
-
-
-4. Loading the ML Model:
-
-The pre-trained diabetes prediction model, saved as a pickle file, is loaded into the application:
-
-Python
-
+4. 📦 Loading the ML Model
+python
+Copy
+Edit
 diabetes_model = pickle.load(open(r"c:/Users/user/Desktop/Machine learning pratice/Deploy diabtes prediction M", 'rb'))
-
-
-5. Diabetes Prediction Endpoint:
-
-A POST endpoint /diabetes_prediction was created to handle prediction requests. It receives input parameters, converts them into a list, and uses the loaded machine learning model to make a prediction. The result (diabetic or not diabetic) is then returned.
-
-Python
-
+5. 🧪 Diabetes Prediction Endpoint
+python
+Copy
+Edit
 @app.post('/diabetes_prediction')
 def diabetes_predd(input_parameters: model_input):
     input_list = [
@@ -106,22 +88,111 @@ def diabetes_predd(input_parameters: model_input):
     ]
     prediction = diabetes_model.predict([input_list])
 
-    if (prediction[0] == 0):
+    if prediction[0] == 0:
         return 'The person is not diabetic'
     else:
         return 'The person is diabetic'
-
-
-6. Exposing the API with Ngrok:
-
-To make the local FastAPI application accessible from the internet, ngrok was used to create a public URL. This is crucial for the Android app to connect to the backend.
-
-Python
-
+6. 🌐 Exposing the API with Ngrok
+python
+Copy
+Edit
+ngrok.authtoken("YOUR_AUTHTOKEN")  # Replace with your authtoken
 ngrok_tunnel = ngrok.connect(8000)
 print('Public URL:', ngrok_tunnel.public_url)
+
 nest_asyncio.apply()
 uvicorn.run(app, host="0.0.0.0", port=8000)
+Save your Ngrok authtoken in your ngrok configuration file for convenience.
 
+📄 Sample API Request
+Example Input JSON:
 
-I also authorized ngrok with my authtoken.
+json
+Copy
+Edit
+{
+  "Pregnancies": 2,
+  "Glucose": 100,
+  "BloodPressure": 100,
+  "SkinThickness": 10,
+  "Insulin": 100,
+  "BMI": 25,
+  "DiabetesPedigreeFunction": 0.253,
+  "Age": 50
+}
+Curl Example:
+
+bash
+Copy
+Edit
+curl -X 'POST' \
+  'https://<your-ngrok-url>/diabetes_prediction' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "Pregnancies": 2,
+  "Glucose": 100,
+  "BloodPressure": 100,
+  "SkinThickness": 10,
+  "Insulin": 100,
+  "BMI": 25,
+  "DiabetesPedigreeFunction": 0.253,
+  "Age": 50
+}'
+Sample Response:
+
+json
+Copy
+Edit
+"The person is diabetic"
+📲 Frontend: MIT App Inventor
+The Android application frontend was developed using MIT App Inventor, a block-based visual programming environment.
+
+🧩 UI Components
+Labels: "Sugar", "Diabetes AI"
+
+Text Boxes: For inputting Pregnancies, Glucose, Blood Pressure, Skin Thickness, Insulin, BMI, Diabetes Pedigree Function, and Age.
+
+Buttons:
+
+Predict: Sends prediction request.
+
+Connect: Initializes the API endpoint.
+
+Other:
+
+Notifier
+
+model_response: Displays prediction result.
+
+⚙️ App Logic (Block Editor)
+The "Predict" button gathers inputs and sends them to the backend via an HTTP POST request.
+
+The response (prediction) is displayed on the screen.
+
+Main Blocks:
+make a dictionary: Creates a JSON payload with the necessary fields.
+
+web1.Url: Set to the public ngrok URL of the FastAPI backend.
+
+web1.PostText: Sends the dictionary as JSON to the API.
+
+web1.GotText: Displays the result in model_response.Text.
+
+📦 Project Structure
+bash
+Copy
+Edit
+📁 diabetes_app_backend
+│   ├── main.py               # FastAPI backend
+│   ├── diabetes_model.pkl    # Trained ML model
+│   └── requirements.txt      # List of dependencies
+📁 mit_app_inventor
+│   └── DiabetesPredictor.aia # MIT App Inventor source file
+📌 Notes
+Ensure your Android device is connected to the internet when using the app.
+
+The backend must be running and exposed via ngrok during testing.
+
+📜 License
+This project is licensed under the MIT License.
